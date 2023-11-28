@@ -1,4 +1,5 @@
 import { Runner } from "./util/Runner";
+
 try {
     const runner = new Runner();
 
