@@ -9,7 +9,11 @@ export class Runner {
         return await Bun.file(path).text();
     };
 
-    async run(f: (input: string) => string, day: number, part: number) {
+    async run(
+        f: (input: string) => string,
+        day: number,
+        part: number
+    ): Promise<boolean> {
         const input = await this.getInput(day, part);
         const expectedOutput = await this.getOutput(day, part);
         const actualOutput = f(input);
@@ -17,7 +21,8 @@ export class Runner {
             console.error(`FAIL on Day ${day} Part ${part}:`);
             console.error(`Expected: ${expectedOutput}`);
             console.error(`Got: ${actualOutput}`);
-            throw "fail";
+            return false;
         }
+        return true;
     }
 }

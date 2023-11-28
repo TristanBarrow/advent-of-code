@@ -1,12 +1,15 @@
 import { Runner } from "./util/Runner";
 
-try {
-    const runner = new Runner();
+const runner = new Runner();
+let success = true;
+for (let i = 1; i <= 25; i++) {
+    const day = require(`./src/day${i}`);
 
-    for (let i = 1; i <= 25; i++) {
-        const day = require(`./src/day${i}`);
-        runner.run(day.part1, i, 1);
-        runner.run(day.part2, i, 2);
-    }
-    console.log("!!SUCCESS!!");
-} catch (e) {}
+    success = await runner.run(day.part1, i, 1);
+    if (!success) break;
+    success = await runner.run(day.part2, i, 2);
+    if (!success) break;
+}
+
+if (success) console.log("!!!SUCCESS!!!");
+else console.error("!!!FAILURE!!!");
