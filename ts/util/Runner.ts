@@ -1,11 +1,11 @@
 export class Runner {
     private getInput = async (day: number, part: number) => {
-        const path = `../../input/day${day}_part${part}.txt`;
+        const path = `../input/day${day}-part${part}.txt`;
         return await Bun.file(path).text();
     };
 
     private printOut = async (data: string, day: number, part: number) => {
-        const path = `../../output/day${day}_part${part}.txt`;
+        const path = `../output/day${day}-part${part}.txt`;
         await Bun.write(path, data);
     };
 

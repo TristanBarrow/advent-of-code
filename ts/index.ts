@@ -1,6 +1,9 @@
-import * as day1 from "./src/day1";
-import { Runner } from "./util/io";
+import { Runner } from "./util/Runner";
 
 const runner = new Runner();
 
-runner.run(day1.part1, 1, 1);
+for (let i = 1; i <= 25; i++) {
+    const day = require(`./src/day${i}`);
+    runner.run(day.part1, i, 1);
+    runner.run(day.part2, i, 2);
+}
