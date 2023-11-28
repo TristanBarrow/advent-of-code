@@ -4,14 +4,20 @@ export class Runner {
         return await Bun.file(path).text();
     };
 
-    private printOut = async (data: string, day: number, part: number) => {
+    private getOutput = async (day: number, part: number) => {
         const path = `../output/day${day}-part${part}.txt`;
-        await Bun.write(path, data);
+        return await Bun.file(path).text();
     };
 
     async run(f: (input: string) => string, day: number, part: number) {
         const input = await this.getInput(day, part);
-        const output = f(input);
-        await this.printOut(output, day, part);
+        const expectedOutput = await this.getOutput(day, part);
+        const actualOutput = f(input);
+        if (expectedOutput !== actualOutput) {
+            console.error(`FAIL on Day ${day} Part ${part}:`);
+            console.error(`Expected: ${expectedOutput}`);
+            console.error(`Got: ${actualOutput}`);
+            throw "fail";
+        }
     }
 }
