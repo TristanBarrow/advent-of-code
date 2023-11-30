@@ -65,5 +65,14 @@ export const part1 = (input: string): string => {
 };
 
 export const part2 = (input: string): string => {
-    return "_";
+    const rounds = splitRounds(input);
+    const decodedRounds = rounds.map((round) => [
+        decodeGame(round[0]),
+        decodeGame(round[1]),
+    ]);
+
+    const playedRounds = decodedRounds.map(calculateRound);
+    const sum = playedRounds.reduce((a, b) => a + b);
+
+    return sum.toString();
 };
