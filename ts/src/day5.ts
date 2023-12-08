@@ -11,11 +11,17 @@ class MapLayer {
         if (isNaN(this.sourceStart)) throw Error(`Parsing layer failed with "${layerInput}"`);
         if (isNaN(this.size)) throw Error(`Parsing layer failed with "${layerInput}"`);
     }
-    isInLayer(num: number) {
+    isInLayerForward(num: number) {
         return num >= this.sourceStart && num < this.sourceStart + this.size;
     }
-    useLayer(num: number) {
+    useLayerForward(num: number) {
         return num - this.sourceStart + this.destStart;
+    }
+    isInLayerBackward(num: number) {
+        return num >= this.destStart && num < this.destStart + this.size;
+    }
+    useLayerBackward(num: number) {
+        return num - this.destStart + this.sourceStart;
     }
 }
 
@@ -31,14 +37,28 @@ class DataMap {
             this.layers.push(new MapLayer(parsed[i]));
         }
     }
-    translate(num: number) {
-        const filtered = this.layers.filter((m) => m.isInLayer(num));
+    translateForward(num: number) {
+        const filtered = this.layers.filter((m) => m.isInLayerForward(num));
         if (filtered.length === 0) return num;
-        return filtered[0].useLayer(num);
+        return filtered[0].useLayerForward(num);
+    }
+    translateBackward(num: number) {
+        const filtered = this.layers.filter((m) => m.isInLayerBackward(num));
+        if (filtered.length === 0) return num;
+        return filtered[0].useLayerBackward(num);
     }
 }
 
 let seeds: number[] = [];
+
+const isValidSeed = (num: number) => {
+    for (let i = 0; i < seeds.length; i += 2) {
+        const start = seeds[i];
+        const end = start + seeds[i + 1];
+        if (num >= start && num < end) return true;
+    }
+    return false;
+};
 
 const parseDataMaps = (input: string): DataMap[] => {
     const lines = input.split("\n\n");
@@ -50,21 +70,37 @@ const parseDataMaps = (input: string): DataMap[] => {
     return lines.filter((line) => !line.includes("seeds:")).map((line) => new DataMap(line));
 };
 
-const runSeed = (seed: number, maps: DataMap[]) => {
+const runSeedForward = (seed: number, maps: DataMap[]) => {
     let tmp = seed;
     for (let i = 0; i < maps.length; i++) {
-        tmp = maps[i].translate(tmp);
+        tmp = maps[i].translateForward(tmp);
+    }
+    return tmp;
+};
+
+const runSeedBackward = (seed: number, maps: DataMap[]) => {
+    let tmp = seed;
+    for (let i = maps.length - 1; i >= 0; i--) {
+        tmp = maps[i].translateBackward(tmp);
     }
     return tmp;
 };
 
 export const part1 = (input: string): string => {
     const maps = parseDataMaps(input);
-    const locations = seeds.map((seed) => runSeed(seed, maps));
+    const locations = seeds.map((seed) => runSeedForward(seed, maps));
     const result = locations.reduce((a, b) => (a < b ? a : b));
     return result.toString();
 };
 
 export const part2 = (input: string): string => {
-    return "_";
+    const maps = parseDataMaps(input);
+    let location = 0;
+    while (true) {
+        const seed = runSeedBackward(location, maps);
+        if (location % 1000000 === 0) console.log(location);
+        if (isValidSeed(seed)) break;
+        location++;
+    }
+    return location.toString();
 };
