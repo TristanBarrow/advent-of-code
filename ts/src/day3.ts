@@ -7,15 +7,37 @@ class Part {
     constructor(value: number, start: Location | null, end: Location | null) {
         if (start === null) throw new Error("Start cannot be null");
         if (end === null) throw new Error("End cannot be null");
+        if (start.vertical !== end.vertical)
+            throw new Error("start and end must be on the same line");
         this.value = value;
         this.start = start;
         this.end = end;
     }
+    partIsOnLocation(location: Location) {
+        if (location.vertical !== this.start.vertical) return false;
+        return (
+            this.start.horizontal <= location.horizontal &&
+            this.end.horizontal >= location.horizontal
+        );
+    }
     getUID() {
-        return `${this.start.horizontal}${this.start.vertical}${this.value}`;
+        return `${this.start.vertical}_${this.start.horizontal}`;
     }
 }
 
+const getPartId = () => {};
+
+class PartCatalog {
+    private parts: Part[] = [];
+    add(part: Part) {
+        this.parts.push(part);
+    }
+    getPartByLocation(location: Location): Part | null {
+        return (
+            this.parts.find((part) => part.partIsOnLocation(location)) || null
+        );
+    }
+}
 type Location = {
     horizontal: number;
     vertical: number;
@@ -90,6 +112,13 @@ class Schematic {
         const next = this.getValue(nextLoc);
         return current.category === "digit" && next.category !== "digit";
     }
+    forEachNeighbor(location: Location, action: (l: Location) => void) {
+        for (let i = -1; i <= 1; i++) {
+            for (let j = -1; j <= 1; j++) {
+                action(Loc(location.vertical + i, location.horizontal + j));
+            }
+        }
+    }
     forEach(action: SchemeAction) {
         for (let i = 0; i < this.data.length; i++) {
             for (let j = 0; j < this.data[i].length; j++) {
@@ -131,9 +160,10 @@ export const part1 = (input: string): string => {
 
 export const part2 = (input: string): string => {
     const s = new Schematic(input.split("\n"));
-    const parts: Part[] = [];
+    const partCatalog = new PartCatalog();
     let buffer: SchemeValue[] = [];
     let start: Location | null = null;
+
     s.forEach((entry, location) => {
         if (entry.category === "digit") {
             buffer.push(entry);
@@ -142,10 +172,28 @@ export const part2 = (input: string): string => {
             }
             if (s.isEndOfNumber(location)) {
                 const n = parseBuffer(buffer);
-                parts.push(new Part(n, start, location));
+                const part = new Part(n, start, location);
+                partCatalog.add(part);
                 buffer = [];
             }
         }
     });
-    return "_";
+    let gearRatios: number[] = [];
+    s.forEach((entry, location) => {
+        if (entry.category === "gear") {
+            const set = new Set<Part>();
+            s.forEachNeighbor(location, (_location) => {
+                const part = partCatalog.getPartByLocation(_location);
+                if (part) set.add(part);
+            });
+            if (set.size === 2) {
+                const setIt = set.values();
+                const v1 = setIt.next().value.value;
+                const v2 = setIt.next().value.value;
+                gearRatios.push(v1 * v2);
+            }
+        }
+    });
+    const result = gearRatios.reduce((a, b) => a + b);
+    return result.toString();
 };
