@@ -103,7 +103,5 @@ const processLine = (line: string): number => {
 
 export const part2 = (input: string): string => {
     const nums = input.split("\n").map(processLine);
-    console.log(nums);
-    // stringNums.forEach((n, i) => { console.log(nums); });
     return nums.reduce((a, b) => a + b).toString();
 };
