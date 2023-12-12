@@ -95,6 +95,7 @@ export const part1 = (input: string): string => {
 
 export const part2 = (input: string): string => {
     const maps = parseDataMaps(input);
+    const startTime = Date.now();
     let location = 0;
     while (true) {
         const seed = runSeedBackward(location, maps);
@@ -102,5 +103,7 @@ export const part2 = (input: string): string => {
         if (isValidSeed(seed)) break;
         location++;
     }
+    const endTime = Date.now();
+    console.log((endTime - startTime) / 60000);
     return location.toString();
 };
